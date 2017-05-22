@@ -1,17 +1,24 @@
 <template>
   <div id="app">
-    <h1>Skytap Resource Usage (from API)</h1>
+    <h1>Skytap Dashboard</h1>
     <ul v-if="usage">
       <li>
         <h2>Global</h2>
-        <just-gage :value="usage.global.concurrent_vms.usage" :max="usage.global.concurrent_vms.limit"></just-gage>
-        <just-gage :value="usage.global.cumulative_svms.usage" :max="usage.global.cumulative_svms.limit"></just-gage>
+        <just-gage :value="usage.global.concurrent_vms.usage"
+                   :max="usage.global.concurrent_vms.limit"
+                   :options="{ title: 'VMs' }" />
+        <just-gage :value="usage.global.cumulative_svms.usage"
+                   :max="usage.global.cumulative_svms.limit"
+                   :options="{ title: 'Cumulative SVM Hours' }" />
       </li>
       <li v-for="(region, regionName) of usage" v-if="regionName != 'global'">
         <h2>{{ regionName }}</h2>
-        <!--<just-gage v-for="stat in stats" :value="region.stat.usage" :max="region.stat.limit"></just-gage>-->
-        <just-gage :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></just-gage>
-        <just-gage :value="region.concurrent_storage_size.usage / 1024" :max="region.concurrent_storage_size.limit / 1024"></just-gage>
+        <just-gage :value="region.concurrent_svms.usage"
+                   :max="region.concurrent_svms.limit"
+                   :options="{ title: 'SVMs' }" />
+        <just-gage :value="region.concurrent_storage_size.usage / 1024"
+                   :max="region.concurrent_storage_size.limit / 1024"
+                   :options="{ title: 'Storage Size [GB]' }" />
       </li>
     </ul>
 
@@ -36,9 +43,9 @@ export default {
   name: 'app',
 
   data: () => ({
-    usage: {},
+    usage: null,
     stats: ['concurrent_svms', 'concurrent_storage_size'],
-    errors: []
+    errors: [],
   }),
 
   // Register components
@@ -47,11 +54,15 @@ export default {
   },
 
   created () {
-    // Query API on startup then poll periodically
+    // Query API and get usage on startup then poll periodically
     this.loadData()
     setInterval(function () {
       this.loadData()
     }.bind(this), 5000)
+    // `.bind(this)` is required so the function inside `setInterval` can
+    // understand `this`. `setInterval` is not evaluated yet while its arguments
+    // are still being evaluated. `this.loadData().bind(...)` is evaluated, then
+    // setInterval is called with the result (bound function).
   },
 
   methods: {
