@@ -1,14 +1,17 @@
 <template>
   <div id="app">
-    <!--<just-gage v-if="usage" v-bind:value="usage.EMEA.concurrent_svms.usage"></just-gage>-->
-    <just-gage v-bind:value="dummy"></just-gage>
-    <just-gage v-bind:value="dummy"></just-gage>
-
     <h1>Skytap Resource Usage (from API)</h1>
     <ul v-if="usage">
-      <li v-for="(region, regionName) of usage">
+      <li>
+        <h2>Global</h2>
+        <just-gage :value="usage.global.concurrent_vms.usage" :max="usage.global.concurrent_vms.limit"></just-gage>
+        <just-gage :value="usage.global.cumulative_svms.usage" :max="usage.global.cumulative_svms.limit"></just-gage>
+      </li>
+      <li v-for="(region, regionName) of usage" v-if="regionName != 'global'">
         <h2>{{ regionName }}</h2>
-        <div v-for="property in region">{{ property.id }}: {{ property.usage }} / {{ property.limit }}</div>
+        <!--<just-gage v-for="stat in stats" :value="region.stat.usage" :max="region.stat.limit"></just-gage>-->
+        <just-gage :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></just-gage>
+        <just-gage :value="region.concurrent_storage_size.usage / 1024" :max="region.concurrent_storage_size.limit / 1024"></just-gage>
       </li>
     </ul>
 
@@ -23,8 +26,8 @@
 <script>
 import { HTTP_REST_API } from './http-common'
 
-// Do not forget to import raphael for JustGage to work
-import Raphael from 'raphael/raphael.min.js'
+// Import Raphael for JustGage to work
+import Raphael from 'raphael/raphael'
 global.Raphael = Raphael
 
 import JustGage from './JustGage.vue'
@@ -34,7 +37,7 @@ export default {
 
   data: () => ({
     usage: {},
-    dummy: 67,
+    stats: ['concurrent_svms', 'concurrent_storage_size'],
     errors: []
   }),
 
@@ -60,7 +63,6 @@ export default {
       .catch(e => {
         this.errors.push(e)
       })
-      this.dummy = Math.floor((Math.random() * 10) + 1) * 10
     }
   },
 }
