@@ -5,6 +5,10 @@
 </template>
 
 <script>
+// Import Raphael for JustGage to work
+import Raphael from 'raphael/raphael'
+global.Raphael = Raphael
+
 import justgage from 'justgage'
 
 export default {

@@ -1,3 +1,5 @@
+// TODO Make refresh interval a variable and bind it to input field
+
 <template>
   <div id="app">
     <h1>Skytap Dashboard <icon v-show="loading" name="refresh" spin></icon></h1>
@@ -33,10 +35,6 @@
 
 <script>
 import { HTTP_REST_API } from './http-common'
-
-// Import Raphael for JustGage to work
-import Raphael from 'raphael/raphael'
-global.Raphael = Raphael
 
 import JustGage from './JustGage.vue'
 
