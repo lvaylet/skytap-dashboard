@@ -76,7 +76,7 @@ export default {
     // request response is received (as axios run async?).
     loadData: function () {
       this.loading = true
-      HTTP_REST_API.get('getUsage')
+      HTTP_REST_API.get('skytap/usage')
       .then(response => {
         this.usage = response.data
         this.loading = false
