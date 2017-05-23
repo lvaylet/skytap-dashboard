@@ -1,4 +1,6 @@
 // TODO Make refresh interval a variable and bind it to input field
+// TODO Use Bulma Cards to organize content in tiles?
+// TODO Apply success, warning and danger classes reactively based on usage wrt. limit
 
 <template>
   <div id="app">
@@ -52,8 +54,10 @@
     		    <p class="title">{{ regionName }}</p>
             <p class="title">SVMs</p>
             <p class="subtitle">{{ region.concurrent_svms.usage }} / {{ region.concurrent_svms.limit }}</p>
+            <progress class="progress" :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></progress>
             <p class="title">Storage Size (GB)</p>
             <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
+            <progress class="progress" :value="region.concurrent_storage_size.usage / 1024" :max="region.concurrent_storage_size.limit / 1024"></progress>
           </article>
     	  </div>
       </div>
