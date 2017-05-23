@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^0.16.1",
+    "bulma": "^0.4.1",
     "justgage": "^1.2.2",
     "raphael": "^2.2.7",
     "vue": "^2.2.1",

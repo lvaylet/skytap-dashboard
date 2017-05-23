@@ -34,6 +34,31 @@
         {{ error.message }}
       </li>
     </ul>
+
+    <h2>Bulma Tiles</h2>
+    <div class="tile is-ancestor is-vertical" v-if="usage">
+      <div class="tile is-parent">
+        <article class="tile is-child notification is-info">
+          <p class="title">Global</p>
+          <p class="title">VMs</p>
+    	    <p class="subtitle">{{ usage.global.concurrent_vms.usage }}</p>
+          <p class="title">Cumulative SVM Hours</p>
+    	    <p class="subtitle">{{ usage.global.cumulative_svms.usage }}</p>
+        </article>
+      </div>
+      <div class="tile">
+    	  <div class="tile is-parent" v-for="(region, regionName) of usage" v-if="regionName != 'global'">
+    		  <article class="tile is-child notification is-success">
+    		    <p class="title">{{ regionName }}</p>
+            <p class="title">SVMs</p>
+            <p class="subtitle">{{ region.concurrent_svms.usage }} / {{ region.concurrent_svms.limit }}</p>
+            <p class="title">Storage Size (GB)</p>
+            <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
+          </article>
+    	  </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -105,7 +130,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="css">
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -132,4 +157,6 @@ li {
 a {
   color: #42b983;
 }
+
+@import "~bulma/css/bulma.css";  /* == ../node_modules/bulma/css/bulma.css'; */
 </style>
