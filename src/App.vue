@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <h1>Skytap Dashboard</h1>
+    <h1>Skytap Dashboard <icon v-show="loading" name="refresh" spin></icon></h1>
+    <button @click="loadData">Refresh</button>
     <ul v-if="usage">
       <li>
         <h2>Global</h2>
@@ -39,26 +40,30 @@ global.Raphael = Raphael
 
 import JustGage from './JustGage.vue'
 
+import 'vue-awesome/icons'
+import Icon from 'vue-awesome/components/Icon.vue'
+
 export default {
   name: 'app',
 
   data: () => ({
     usage: null,
-    stats: ['concurrent_svms', 'concurrent_storage_size'],
+    stats_to_display: ['concurrent_svms', 'concurrent_storage_size'],
+    loading: false,
     errors: [],
   }),
 
   // Register components
   components: {
     'just-gage': JustGage,
+    'icon': Icon,
   },
 
-  created () {
+  created: function () {
     // Query API and get usage on startup then poll periodically
     this.loadData()
-    setInterval(function () {
-      this.loadData()
-    }.bind(this), 5000)
+    setInterval(() => { this.loadData() }, 5000)
+    // or setInterval(function () { this.loadData() }.bind(this), 5000)
     // `.bind(this)` is required so the function inside `setInterval` can
     // understand `this`. `setInterval` is not evaluated yet while its arguments
     // are still being evaluated. `this.loadData().bind(...)` is evaluated, then
@@ -66,14 +71,21 @@ export default {
   },
 
   methods: {
+    // FIXME Figure out how to evaluate this.loading = false in all cases
+    // Putting it after `get(...)` does not help. It is executed before the
+    // request response is received (as axios run async?).
     loadData: function () {
+      this.loading = true
       HTTP_REST_API.get('getUsage')
       .then(response => {
         this.usage = response.data
+        this.loading = false
       })
       .catch(e => {
         this.errors.push(e)
+        this.loading = false
       })
+      // this.loading = false  // does not work
     }
   },
 }

@@ -1,3 +1,5 @@
+<!-- FIXME Figure out why regional gauges do not update while global does -->
+
 <template>
   <div :id="_uid"></div>
 </template>
@@ -36,6 +38,9 @@ export default {
     max (val) {
       this.g.refresh(this.value, val)
     },
+    options (val) {
+      this.g.refresh(this.value, this.max, this.options)
+    }
   }
 }
 </script>
