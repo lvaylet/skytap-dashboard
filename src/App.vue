@@ -3,7 +3,11 @@
 <template>
   <div id="app">
     <h1>Skytap Dashboard <icon v-show="loading" name="refresh" spin></icon></h1>
+
+    <label for="refresh-interval">Refresh every (milliseconds): </label>
+    <input v-model="refreshInterval" id="refresh-interval">
     <button @click="loadData">Refresh</button>
+
     <ul v-if="usage">
       <li>
         <h2>Global</h2>
@@ -46,7 +50,8 @@ export default {
 
   data: () => ({
     usage: null,
-    stats_to_display: ['concurrent_svms', 'concurrent_storage_size'],
+    statsToDisplay: ['concurrent_svms', 'concurrent_storage_size'],  // unused, figure out how to iterate on this when creating the regional gauges
+    refreshInterval: 60000, // in milliseconds, used only with setTimeout below
     loading: false,
     errors: [],
   }),
@@ -58,14 +63,18 @@ export default {
   },
 
   created: function () {
-    // Query API and get usage on startup then poll periodically
+    // Load data once on startup, then poll periodically. Drawback is the period
+    // cannot be changed easily.
     this.loadData()
     setInterval(() => { this.loadData() }, 5000)
     // or setInterval(function () { this.loadData() }.bind(this), 5000)
     // `.bind(this)` is required so the function inside `setInterval` can
     // understand `this`. `setInterval` is not evaluated yet while its arguments
     // are still being evaluated. `this.loadData().bind(...)` is evaluated, then
-    // setInterval is called with the result (bound function).
+    // setInterval is called with the result (bound function). In other words,
+    // the `this` parameter passed to `bind()` is retained via a closure and
+    // explicitly set as `this` when the function is later called, using
+    // `Function.prototype.apply()`.
   },
 
   methods: {
@@ -84,6 +93,13 @@ export default {
         this.loading = false
       })
       // this.loading = false  // does not work
+
+      // setTimeout can be used instead of setInterval (see above) so the
+      // function has a timeout on itself and updates periodically.
+      // `setTimeout` requires an extra line of code to keep it propagating,
+      // which can be a maintenance problem but also lets the period be changed
+      // easily.
+      // setTimeout(this.loadData, this.refreshInterval)
     }
   },
 }
