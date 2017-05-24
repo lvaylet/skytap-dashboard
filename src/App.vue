@@ -4,24 +4,8 @@
 
 <template>
   <div id="app">
-    <div class="container">
-      <h1 class="title">Skytap Dashboard</h1>
 
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
-          <label class="label">Refresh Interval (ms)</label>
-        </div>
-        <div class="field-body">
-          <div class="field has-addons">
-            <p class="control">
-              <input class="input" type="text" placeholder="in milliseconds" v-model="refreshInterval">
-            </p>
-            <p class="control">
-              <a class="button is-primary" :class="{ 'is-loading': loading }" @click="loadData">Refresh</a>
-            </p>
-          </div>
-        </div>
-      </div>
+    <div class="container">
 
       <ul v-if="usage">
         <li>
@@ -44,13 +28,6 @@
         </li>
       </ul>
 
-      <ul v-if="errors && errors.length">
-        <li v-for="error of errors">
-          {{ error.message }}
-        </li>
-      </ul>
-
-      <h2>Bulma Tiles</h2>
       <div class="tile is-ancestor is-vertical" v-if="usage">
         <div class="tile is-parent">
           <article class="tile is-child notification is-info">
@@ -75,7 +52,31 @@
       	  </div>
         </div>
       </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Refresh Interval (ms)</label>
+        </div>
+        <div class="field-body">
+          <div class="field has-addons">
+            <p class="control">
+              <input class="input" type="text" placeholder="in milliseconds" v-model="refreshInterval">
+            </p>
+            <p class="control">
+              <a class="button is-primary" :class="{ 'is-loading': loading }" @click="loadData">Refresh</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <ul v-if="errors && errors.length">
+        <li v-for="error of errors">
+          {{ error.message }}
+        </li>
+      </ul>
+
     </div>
+
   </div>
 </template>
 
