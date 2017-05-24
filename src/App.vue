@@ -5,77 +5,142 @@
 <template>
   <div id="app">
 
-    <div class="container">
-
-      <ul v-if="usage">
-        <li>
-          <h2>Global</h2>
-          <just-gage :value="usage.global.concurrent_vms.usage"
-                     :max="usage.global.concurrent_vms.limit"
-                     :options="{ title: 'VMs' }" />
-          <just-gage :value="usage.global.cumulative_svms.usage"
-                     :max="usage.global.cumulative_svms.limit"
-                     :options="{ title: 'Cumulative SVM Hours' }" />
-        </li>
-        <li v-for="(region, regionName) of usage" v-if="regionName != 'global'">
-          <h2>{{ regionName }}</h2>
-          <just-gage :value="region.concurrent_svms.usage"
-                     :max="region.concurrent_svms.limit"
-                     :options="{ title: 'SVMs' }" />
-          <just-gage :value="region.concurrent_storage_size.usage / 1024"
-                     :max="region.concurrent_storage_size.limit / 1024"
-                     :options="{ title: 'Storage Size [GB]' }" />
-        </li>
-      </ul>
-
-      <div class="tile is-ancestor is-vertical" v-if="usage">
-        <div class="tile is-parent">
-          <article class="tile is-child notification is-info">
-            <p class="title">Global</p>
-            <p class="title">VMs</p>
-      	    <p class="subtitle">{{ usage.global.concurrent_vms.usage }}</p>
-            <p class="title">Cumulative SVM Hours</p>
-      	    <p class="subtitle">{{ usage.global.cumulative_svms.usage }}</p>
-          </article>
-        </div>
-        <div class="tile">
-      	  <div class="tile is-parent" v-for="(region, regionName) of usage" v-if="regionName != 'global'">
-      		  <article class="tile is-child notification is-success">
-      		    <p class="title">{{ regionName }}</p>
-              <p class="title">SVMs</p>
-              <p class="subtitle">{{ region.concurrent_svms.usage }} / {{ region.concurrent_svms.limit }}</p>
-              <progress class="progress" :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></progress>
-              <p class="title">Storage Size (GB)</p>
-              <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
-              <progress class="progress" :value="region.concurrent_storage_size.usage / 1024" :max="region.concurrent_storage_size.limit / 1024"></progress>
-            </article>
-      	  </div>
+    <section class="hero is-primary">
+      <div class="hero-body">
+        <div class="container">
+          <h1 class="title">
+            Skytap Dashboard
+          </h1>
+          <h2 class="subtitle">
+            Monitor usage in real time
+          </h2>
         </div>
       </div>
+    </section>
 
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
-          <label class="label">Refresh Interval (ms)</label>
+    <section class="section" v-if="usage">
+      <div class="container">
+        <div class="heading">
+          <h1 class="title">JustGage</h1>
+          <h2 class="subtitle">
+            Subtitle
+          </h2>
+          <ul>
+            <li>
+              <h2>Global</h2>
+              <just-gage :value="usage.global.concurrent_vms.usage"
+                         :max="usage.global.concurrent_vms.limit"
+                         :options="{ title: 'VMs' }" />
+              <just-gage :value="usage.global.cumulative_svms.usage"
+                         :max="usage.global.cumulative_svms.limit"
+                         :options="{ title: 'Cumulative SVM Hours' }" />
+            </li>
+            <li v-for="(region, regionName) of usage" v-if="regionName != 'global'">
+              <h2>{{ regionName }}</h2>
+              <just-gage :value="region.concurrent_svms.usage"
+                         :max="region.concurrent_svms.limit"
+                         :options="{ title: 'SVMs' }" />
+              <just-gage :value="region.concurrent_storage_size.usage / 1024"
+                         :max="region.concurrent_storage_size.limit / 1024"
+                         :options="{ title: 'Storage Size [GB]' }" />
+            </li>
+          </ul>
         </div>
-        <div class="field-body">
-          <div class="field has-addons">
-            <p class="control">
-              <input class="input" type="text" placeholder="in milliseconds" v-model="refreshInterval">
-            </p>
-            <p class="control">
-              <a class="button is-primary" :class="{ 'is-loading': loading }" @click="loadData">Refresh</a>
-            </p>
+      </div>
+    </section>
+
+    <section class="section" v-if="usage">
+      <div class="container">
+        <div class="heading">
+          <h1 class="title">Bulma Tiles</h1>
+          <h2 class="subtitle">
+            Subtitle
+          </h2>
+          <div class="tile is-ancestor is-vertical">
+            <div class="tile is-parent">
+              <article class="tile is-child notification is-info">
+                <p class="title">Global</p>
+                <p class="title">VMs</p>
+                <p class="subtitle">{{ usage.global.concurrent_vms.usage }}</p>
+                <p class="title">Cumulative SVM Hours</p>
+                <p class="subtitle">{{ usage.global.cumulative_svms.usage }}</p>
+              </article>
+            </div>
+            <div class="tile">
+              <div class="tile is-parent" v-for="(region, regionName) of usage" v-if="regionName != 'global'">
+                <article class="tile is-child notification is-success">
+                  <p class="title">{{ regionName }}</p>
+                  <p class="title">SVMs</p>
+                  <p class="subtitle">{{ region.concurrent_svms.usage }} / {{ region.concurrent_svms.limit }}</p>
+                  <progress class="progress" :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></progress>
+                  <p class="title">Storage Size (GB)</p>
+                  <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
+                  <progress class="progress" :value="region.concurrent_storage_size.usage / 1024" :max="region.concurrent_storage_size.limit / 1024"></progress>
+                </article>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </section>
 
-      <ul v-if="errors && errors.length">
-        <li v-for="error of errors">
-          {{ error.message }}
-        </li>
-      </ul>
+    <section class="section" v-if="errors && errors.length">
+      <div class="container">
+        <div class="heading">
+          <h1 class="title">Errors</h1>
+          <h2 class="subtitle">
+            Subtitle
+          </h2>
+          <ul>
+            <li v-for="error of errors">
+              {{ error.message }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
 
-    </div>
+    <section class="section">
+      <div class="container">
+        <div class="heading">
+          <h1 class="title">Settings</h1>
+          <h2 class="subtitle">
+            Subtitle
+          </h2>
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+              <label class="label">Refresh Interval (ms)</label>
+            </div>
+            <div class="field-body">
+              <div class="field has-addons">
+                <p class="control">
+                  <input class="input" type="text" placeholder="in milliseconds" v-model="refreshInterval">
+                </p>
+                <p class="control">
+                  <a class="button is-primary" :class="{ 'is-loading': loading }" @click="loadData">Refresh</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="content has-text-centered">
+          <p>
+            <strong>Skytap Dashboard</strong> by <a href="http://www.talend.com">Talend</a>.
+            The source code is licensed <a href="http://opensource.org/licenses/mit-license.php">MIT</a>.
+          </p>
+          <p>
+            <a class="icon" href="https://github.com/lvaylet/skytap-dashboard">
+              <i class="fa fa-github"></i>
+            </a>
+          </p>
+        </div>
+      </div>
+    </footer>
 
   </div>
 </template>
@@ -150,4 +215,5 @@ export default {
 
 <style lang="css">
 @import "~bulma/css/bulma.css";  /* == ../node_modules/bulma/css/bulma.css'; */
+@import "~font-awesome/css/font-awesome.css";
 </style>
