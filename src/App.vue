@@ -1,6 +1,8 @@
 // TODO Make refresh interval a variable and bind it to input field
 // TODO Use Bulma Cards to organize content in tiles?
-// TODO Bind `success`, `warning` and `danger` classes reactively based on usage wrt. limit
+// TODO Bind `success`, `warning` and `danger` classes reactively based on usage
+// wrt. limit. Use computed data to update regional status? Like compute
+// usage/limit and bind classes based on thresholds (80%, 95%)
 
 <template>
   <div id="app">
