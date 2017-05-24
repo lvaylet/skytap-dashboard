@@ -42,7 +42,7 @@
               <just-gage :value="region.concurrent_svms.usage"
                          :max="region.concurrent_svms.limit"
                          :options="{ title: 'SVMs' }" />
-              <just-gage :value="region.concurrent_storage_size.usage / 1024"
+              <just-gage :value="region.concurrent_storage_size.usage / 1024 | round"
                          :max="region.concurrent_storage_size.limit / 1024"
                          :options="{ title: 'Storage Size [GB]' }" />
             </li>
@@ -60,24 +60,24 @@
           </h2>
           <div class="tile is-ancestor is-vertical">
             <div class="tile is-parent">
-              <article class="tile is-child notification is-info">
+              <article class="tile is-child notification" :class="regionalStates['global']">
                 <p class="title">Global</p>
                 <p class="title">VMs</p>
-                <p class="subtitle">{{ usage.global.concurrent_vms.usage }}</p>
+                <p class="subtitle">{{ usage.global.concurrent_vms.usage }} / {{ usage.global.concurrent_vms.limit }}</p>
                 <p class="title">Cumulative SVM Hours</p>
-                <p class="subtitle">{{ usage.global.cumulative_svms.usage }}</p>
+                <p class="subtitle">{{ usage.global.cumulative_svms.usage | round }} / {{ usage.global.cumulative_svms.limit }}</p>
               </article>
             </div>
             <div class="tile">
               <div class="tile is-parent" v-for="(region, regionName) of usage" v-if="regionName != 'global'">
-                <article class="tile is-child notification is-success">
+                <article class="tile is-child notification" :class="regionalStates[regionName]">
                   <p class="title">{{ regionName }}</p>
                   <p class="title">SVMs</p>
                   <p class="subtitle">{{ region.concurrent_svms.usage }} / {{ region.concurrent_svms.limit }}</p>
                   <progress class="progress" :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></progress>
                   <p class="title">Storage Size (GB)</p>
-                  <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
-                  <progress class="progress" :value="region.concurrent_storage_size.usage / 1024" :max="region.concurrent_storage_size.limit / 1024"></progress>
+                  <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 | round }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
+                  <progress class="progress" :value="region.concurrent_storage_size.usage / 1024 | round" :max="region.concurrent_storage_size.limit / 1024"></progress>
                 </article>
               </div>
             </div>
@@ -155,6 +155,8 @@ import JustGage from './JustGage.vue'
 import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon.vue'
 
+import './filters.js'  // custom filters
+
 export default {
   name: 'app',
 
@@ -165,6 +167,21 @@ export default {
     loading: false,
     errors: [],
   }),
+
+  computed: {
+    // Compute regional metrics to determine tile colors (success, warning...)
+    regionalStates: function() {
+      return this.usage
+      ? {
+        'global': this.getClassFromOccupancyRate(this.usage['global'].cumulative_svms.usage / this.usage['global'].cumulative_svms.limit),
+        'APAC': this.getClassFromOccupancyRate(this.usage['APAC'].concurrent_svms.usage / this.usage['APAC'].concurrent_svms.limit),
+        'EMEA': this.getClassFromOccupancyRate(this.usage['EMEA'].concurrent_svms.usage / this.usage['EMEA'].concurrent_svms.limit),
+        'US-East': this.getClassFromOccupancyRate(this.usage['US-East'].concurrent_svms.usage / this.usage['US-East'].concurrent_svms.limit),
+        'US-West': this.getClassFromOccupancyRate(this.usage['US-West'].concurrent_svms.usage / this.usage['US-West'].concurrent_svms.limit),
+      }
+      : 'is-info'
+    },
+  },
 
   // Register components
   components: {
@@ -210,6 +227,15 @@ export default {
       // which can be a maintenance problem but also lets the period be changed
       // easily.
       // setTimeout(this.loadData, this.refreshInterval)
+    },
+    getClassFromOccupancyRate: function(occupancyRate) {
+      if (occupancyRate < 0.75) {
+        return 'is-success'
+      } else if (occupancyRate < 0.90) {
+        return 'is-warning'
+      } else {
+        return 'is-danger'
+      }
     }
   },
 }
