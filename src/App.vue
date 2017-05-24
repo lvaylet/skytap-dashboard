@@ -160,7 +160,10 @@ export default {
 
   data: () => ({
     usage: null,
-    statsToDisplay: ['concurrent_svms', 'concurrent_storage_size'],  // unused, figure out how to iterate on this when creating the regional gauges
+    regionalStatsToDisplay: {
+      'concurrent_svms': 'SVMs',
+      'concurrent_storage_size': 'Storage Size (GB)'
+    },  // unused, figure out how to iterate on this when creating the regional gauges
     refreshInterval: 60000, // in milliseconds, used only with setTimeout below
     loading: false,
     errors: [],
