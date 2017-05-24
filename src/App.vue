@@ -1,68 +1,81 @@
 // TODO Make refresh interval a variable and bind it to input field
 // TODO Use Bulma Cards to organize content in tiles?
-// TODO Apply success, warning and danger classes reactively based on usage wrt. limit
+// TODO Bind `success`, `warning` and `danger` classes reactively based on usage wrt. limit
 
 <template>
   <div id="app">
-    <h1>Skytap Dashboard <icon v-show="loading" name="refresh" spin></icon></h1>
+    <div class="container">
+      <h1 class="title">Skytap Dashboard</h1>
 
-    <label for="refresh-interval">Refresh every (milliseconds): </label>
-    <input v-model="refreshInterval" id="refresh-interval">
-    <button @click="loadData">Refresh</button>
-
-    <ul v-if="usage">
-      <li>
-        <h2>Global</h2>
-        <just-gage :value="usage.global.concurrent_vms.usage"
-                   :max="usage.global.concurrent_vms.limit"
-                   :options="{ title: 'VMs' }" />
-        <just-gage :value="usage.global.cumulative_svms.usage"
-                   :max="usage.global.cumulative_svms.limit"
-                   :options="{ title: 'Cumulative SVM Hours' }" />
-      </li>
-      <li v-for="(region, regionName) of usage" v-if="regionName != 'global'">
-        <h2>{{ regionName }}</h2>
-        <just-gage :value="region.concurrent_svms.usage"
-                   :max="region.concurrent_svms.limit"
-                   :options="{ title: 'SVMs' }" />
-        <just-gage :value="region.concurrent_storage_size.usage / 1024"
-                   :max="region.concurrent_storage_size.limit / 1024"
-                   :options="{ title: 'Storage Size [GB]' }" />
-      </li>
-    </ul>
-
-    <ul v-if="errors && errors.length">
-      <li v-for="error of errors">
-        {{ error.message }}
-      </li>
-    </ul>
-
-    <h2>Bulma Tiles</h2>
-    <div class="tile is-ancestor is-vertical" v-if="usage">
-      <div class="tile is-parent">
-        <article class="tile is-child notification is-info">
-          <p class="title">Global</p>
-          <p class="title">VMs</p>
-    	    <p class="subtitle">{{ usage.global.concurrent_vms.usage }}</p>
-          <p class="title">Cumulative SVM Hours</p>
-    	    <p class="subtitle">{{ usage.global.cumulative_svms.usage }}</p>
-        </article>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Refresh Interval (ms)</label>
+        </div>
+        <div class="field-body">
+          <div class="field has-addons">
+            <p class="control">
+              <input class="input" type="text" placeholder="in milliseconds" v-model="refreshInterval">
+            </p>
+            <p class="control">
+              <a class="button is-primary" :class="{ 'is-loading': loading }" @click="loadData">Refresh</a>
+            </p>
+          </div>
+        </div>
       </div>
-      <div class="tile">
-    	  <div class="tile is-parent" v-for="(region, regionName) of usage" v-if="regionName != 'global'">
-    		  <article class="tile is-child notification is-success">
-    		    <p class="title">{{ regionName }}</p>
-            <p class="title">SVMs</p>
-            <p class="subtitle">{{ region.concurrent_svms.usage }} / {{ region.concurrent_svms.limit }}</p>
-            <progress class="progress" :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></progress>
-            <p class="title">Storage Size (GB)</p>
-            <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
-            <progress class="progress" :value="region.concurrent_storage_size.usage / 1024" :max="region.concurrent_storage_size.limit / 1024"></progress>
+
+      <ul v-if="usage">
+        <li>
+          <h2>Global</h2>
+          <just-gage :value="usage.global.concurrent_vms.usage"
+                     :max="usage.global.concurrent_vms.limit"
+                     :options="{ title: 'VMs' }" />
+          <just-gage :value="usage.global.cumulative_svms.usage"
+                     :max="usage.global.cumulative_svms.limit"
+                     :options="{ title: 'Cumulative SVM Hours' }" />
+        </li>
+        <li v-for="(region, regionName) of usage" v-if="regionName != 'global'">
+          <h2>{{ regionName }}</h2>
+          <just-gage :value="region.concurrent_svms.usage"
+                     :max="region.concurrent_svms.limit"
+                     :options="{ title: 'SVMs' }" />
+          <just-gage :value="region.concurrent_storage_size.usage / 1024"
+                     :max="region.concurrent_storage_size.limit / 1024"
+                     :options="{ title: 'Storage Size [GB]' }" />
+        </li>
+      </ul>
+
+      <ul v-if="errors && errors.length">
+        <li v-for="error of errors">
+          {{ error.message }}
+        </li>
+      </ul>
+
+      <h2>Bulma Tiles</h2>
+      <div class="tile is-ancestor is-vertical" v-if="usage">
+        <div class="tile is-parent">
+          <article class="tile is-child notification is-info">
+            <p class="title">Global</p>
+            <p class="title">VMs</p>
+      	    <p class="subtitle">{{ usage.global.concurrent_vms.usage }}</p>
+            <p class="title">Cumulative SVM Hours</p>
+      	    <p class="subtitle">{{ usage.global.cumulative_svms.usage }}</p>
           </article>
-    	  </div>
+        </div>
+        <div class="tile">
+      	  <div class="tile is-parent" v-for="(region, regionName) of usage" v-if="regionName != 'global'">
+      		  <article class="tile is-child notification is-success">
+      		    <p class="title">{{ regionName }}</p>
+              <p class="title">SVMs</p>
+              <p class="subtitle">{{ region.concurrent_svms.usage }} / {{ region.concurrent_svms.limit }}</p>
+              <progress class="progress" :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></progress>
+              <p class="title">Storage Size (GB)</p>
+              <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
+              <progress class="progress" :value="region.concurrent_storage_size.usage / 1024" :max="region.concurrent_storage_size.limit / 1024"></progress>
+            </article>
+      	  </div>
+        </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -135,32 +148,5 @@ export default {
 </script>
 
 <style lang="css">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-h1, h2 {
-  font-weight: normal;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-
-a {
-  color: #42b983;
-}
-
 @import "~bulma/css/bulma.css";  /* == ../node_modules/bulma/css/bulma.css'; */
 </style>
