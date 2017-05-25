@@ -14,7 +14,10 @@ import justgage from 'justgage'
 export default {
   props: {
     value: Number,
-    max: Number,
+    max: {
+      type: Number,
+      default: () => (100),
+    },
     options: {
       type: Object,
       default: () => ({}),

@@ -5,19 +5,8 @@
 
 <template>
   <div id="app">
-
-    <section class="hero is-primary">
-      <div class="hero-body">
-        <div class="container">
-          <h1 class="title">
-            Skytap Dashboard
-          </h1>
-          <h2 class="subtitle">
-            Monitor usage in real time
-          </h2>
-        </div>
-      </div>
-    </section>
+    <bulma-hero title="Skytap Dashboard"
+                subtitle="Monitor usage in real time" />
 
     <section class="section" v-if="usage">
       <div class="container">
@@ -93,6 +82,7 @@
 <script>
 import { HTTP_REST_API } from './http-common'
 import JustGage from './JustGage.vue'
+import BulmaHero from './BulmaHero.vue'
 import Region from './Region.vue'
 import './filters.js'  // custom filters
 
@@ -110,6 +100,7 @@ export default {
   components: {
     'just-gage': JustGage,
     'region': Region,
+    'bulma-hero': BulmaHero,
   },
 
   created: function () {
