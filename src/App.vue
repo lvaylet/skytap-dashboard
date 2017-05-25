@@ -1,8 +1,5 @@
-// TODO Make refresh interval a variable and bind it to input field
-// TODO Use Bulma Cards to organize content in tiles?
-// TODO Bind `success`, `warning` and `danger` classes reactively based on usage
-// wrt. limit. Use computed data to update regional status? Like compute
-// usage/limit and bind classes based on thresholds (80%, 95%)
+// TODO Make refresh interval a variable and bind it to input field? Then use
+// setTimeout instead of setInterval
 
 <template>
   <div id="app">
@@ -22,74 +19,23 @@
 
     <section class="section" v-if="usage">
       <div class="container">
-        <div class="heading">
-          <h1 class="title">JustGage</h1>
-          <h2 class="subtitle">
-            Subtitle
-          </h2>
-          <ul>
-            <li>
-              <h2>Global</h2>
-              <just-gage :value="usage.global.concurrent_vms.usage"
-                         :max="usage.global.concurrent_vms.limit"
-                         :options="{ title: 'VMs' }" />
-              <just-gage :value="usage.global.cumulative_svms.usage"
-                         :max="usage.global.cumulative_svms.limit"
-                         :options="{ title: 'Cumulative SVM Hours' }" />
-            </li>
-            <li v-for="(region, regionName) of usage" v-if="regionName != 'global'">
-              <h2>{{ regionName }}</h2>
-              <just-gage :value="region.concurrent_svms.usage"
-                         :max="region.concurrent_svms.limit"
-                         :options="{ title: 'SVMs' }" />
-              <just-gage :value="region.concurrent_storage_size.usage / 1024 | round"
-                         :max="region.concurrent_storage_size.limit / 1024"
-                         :options="{ title: 'Storage Size [GB]' }" />
-            </li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" v-if="usage">
-      <div class="container">
-        <div class="heading">
-          <h1 class="title">Bulma Tiles</h1>
-          <h2 class="subtitle">
-            Subtitle
-          </h2>
-          <div class="tile is-ancestor is-vertical">
-            <div class="tile is-parent">
-              <article class="tile is-child notification" :class="regionalStates['global']">
-                <p class="title">Global</p>
-                <p class="title">VMs</p>
-                <p class="subtitle">{{ usage.global.concurrent_vms.usage }} / {{ usage.global.concurrent_vms.limit }}</p>
-                <p class="title">Cumulative SVM Hours</p>
-                <p class="subtitle">{{ usage.global.cumulative_svms.usage | round }} / {{ usage.global.cumulative_svms.limit }}</p>
-              </article>
-            </div>
-            <div class="tile">
-              <div class="tile is-parent" v-for="(region, regionName) of usage" v-if="regionName != 'global'">
-                <article class="tile is-child notification" :class="regionalStates[regionName]">
-                  <p class="title">{{ regionName }}</p>
-                  <p class="title">SVMs</p>
-                  <p class="subtitle">{{ region.concurrent_svms.usage }} / {{ region.concurrent_svms.limit }}</p>
-                  <progress class="progress" :value="region.concurrent_svms.usage" :max="region.concurrent_svms.limit"></progress>
-                  <p class="title">Storage Size (GB)</p>
-                  <p class="subtitle">{{ region.concurrent_storage_size.usage / 1024 | round }} / {{ region.concurrent_storage_size.limit / 1024 }}</p>
-                  <progress class="progress" :value="region.concurrent_storage_size.usage / 1024 | round" :max="region.concurrent_storage_size.limit / 1024"></progress>
-                </article>
-              </div>
-            </div>
-          </div>
-        </div>
+        <h2>Global</h2>
+        <just-gage :value="usage.global.concurrent_vms.usage"
+                   :max="usage.global.concurrent_vms.limit"
+                   :options="{ title: 'VMs' }" />
+        <just-gage :value="usage.global.cumulative_svms.usage"
+                   :max="usage.global.cumulative_svms.limit"
+                   :options="{ title: 'Cumulative SVM Hours' }" />
+        <region v-for="(region, regionName) of usage" v-if="regionName != 'global'" :key="regionName" :name="regionName" :stats="region" />
       </div>
     </section>
 
     <section class="section" v-if="errors && errors.length">
       <div class="container">
         <div class="heading">
-          <h1 class="title">Errors</h1>
+          <h1 class="title">
+            Errors
+          </h1>
           <h2 class="subtitle">
             Subtitle
           </h2>
@@ -105,7 +51,9 @@
     <section class="section">
       <div class="container">
         <div class="heading">
-          <h1 class="title">Settings</h1>
+          <h1 class="title">
+            Settings
+          </h1>
           <h2 class="subtitle">
             Subtitle
           </h2>
@@ -133,6 +81,7 @@
         <div class="content has-text-centered">
           <p>
             <strong>Skytap Dashboard</strong> by <a href="http://www.talend.com">Talend</a>.
+            Powered by <a href="https://vuejs.org/">Vue.js</a> and <a href="http://bulma.io/">Bulma</a>.
             The source code is licensed <a href="http://opensource.org/licenses/mit-license.php">MIT</a>.
           </p>
           <p>
@@ -149,12 +98,8 @@
 
 <script>
 import { HTTP_REST_API } from './http-common'
-
 import JustGage from './JustGage.vue'
-
-import 'vue-awesome/icons'
-import Icon from 'vue-awesome/components/Icon.vue'
-
+import Region from './Region.vue'
 import './filters.js'  // custom filters
 
 export default {
@@ -162,34 +107,15 @@ export default {
 
   data: () => ({
     usage: null,
-    regionalStatsToDisplay: {
-      'concurrent_svms': 'SVMs',
-      'concurrent_storage_size': 'Storage Size (GB)'
-    },  // unused, figure out how to iterate on this when creating the regional gauges
     refreshInterval: 60000, // in milliseconds, used only with setTimeout below
     loading: false,
     errors: [],
   }),
 
-  computed: {
-    // Compute regional metrics to determine tile colors (success, warning...)
-    regionalStates: function() {
-      return this.usage
-      ? {
-        'global': this.getClassFromOccupancyRate(this.usage['global'].cumulative_svms.usage / this.usage['global'].cumulative_svms.limit),
-        'APAC': this.getClassFromOccupancyRate(this.usage['APAC'].concurrent_svms.usage / this.usage['APAC'].concurrent_svms.limit),
-        'EMEA': this.getClassFromOccupancyRate(this.usage['EMEA'].concurrent_svms.usage / this.usage['EMEA'].concurrent_svms.limit),
-        'US-East': this.getClassFromOccupancyRate(this.usage['US-East'].concurrent_svms.usage / this.usage['US-East'].concurrent_svms.limit),
-        'US-West': this.getClassFromOccupancyRate(this.usage['US-West'].concurrent_svms.usage / this.usage['US-West'].concurrent_svms.limit),
-      }
-      : 'is-info'
-    },
-  },
-
   // Register components
   components: {
     'just-gage': JustGage,
-    'icon': Icon,
+    'region': Region,
   },
 
   created: function () {
@@ -231,15 +157,6 @@ export default {
       // easily.
       // setTimeout(this.loadData, this.refreshInterval)
     },
-    getClassFromOccupancyRate: function(occupancyRate) {
-      if (occupancyRate < 0.75) {
-        return 'is-success'
-      } else if (occupancyRate < 0.90) {
-        return 'is-warning'
-      } else {
-        return 'is-danger'
-      }
-    }
   },
 }
 </script>
