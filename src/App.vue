@@ -1,5 +1,7 @@
 // TODO Make refresh interval a variable and bind it to input field? Then use
 // setTimeout instead of setInterval
+// TODO Use Sass instead of CSS and import files individually to minimize
+// footprint: http://bulma.io/documentation/overview/modular/
 
 <template>
   <div id="app">
@@ -19,57 +21,49 @@
 
     <section class="section" v-if="usage">
       <div class="container">
-        <h2>Global</h2>
-        <just-gage :value="usage.global.concurrent_vms.usage"
-                   :max="usage.global.concurrent_vms.limit"
-                   :options="{ title: 'VMs' }" />
-        <just-gage :value="usage.global.cumulative_svms.usage"
-                   :max="usage.global.cumulative_svms.limit"
-                   :options="{ title: 'Cumulative SVM Hours' }" />
+        <div class="box">
+          <h1 class="title">Global</h1>
+          <just-gage :value="usage.global.concurrent_vms.usage"
+                     :max="usage.global.concurrent_vms.limit"
+                     :options="{ title: 'VMs' }" />
+          <just-gage :value="usage.global.cumulative_svms.usage"
+                     :max="usage.global.cumulative_svms.limit"
+                     :options="{ title: 'Cumulative SVM Hours' }" />
+        </div>
         <region v-for="(region, regionName) of usage" v-if="regionName != 'global'" :key="regionName" :name="regionName" :stats="region" />
       </div>
     </section>
 
     <section class="section" v-if="errors && errors.length">
       <div class="container">
-        <div class="heading">
-          <h1 class="title">
-            Errors
-          </h1>
-          <h2 class="subtitle">
-            Subtitle
-          </h2>
-          <ul>
-            <li v-for="error of errors">
-              {{ error.message }}
-            </li>
-          </ul>
-        </div>
+        <h1 class="title">
+          Errors
+        </h1>
+        <ul>
+          <li v-for="error of errors">
+            {{ error.message }}
+          </li>
+        </ul>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
-        <div class="heading">
-          <h1 class="title">
-            Settings
-          </h1>
-          <h2 class="subtitle">
-            Subtitle
-          </h2>
-          <div class="field is-horizontal">
-            <div class="field-label is-normal">
-              <label class="label">Refresh Interval (ms)</label>
-            </div>
-            <div class="field-body">
-              <div class="field has-addons">
-                <p class="control">
-                  <input class="input" type="text" placeholder="in milliseconds" v-model="refreshInterval">
-                </p>
-                <p class="control">
-                  <a class="button is-primary" :class="{ 'is-loading': loading }" @click="loadData">Refresh</a>
-                </p>
-              </div>
+        <h1 class="title">
+          Settings
+        </h1>
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label">Refresh Interval (ms)</label>
+          </div>
+          <div class="field-body">
+            <div class="field has-addons">
+              <p class="control">
+                <input class="input" type="text" placeholder="in milliseconds" v-model="refreshInterval">
+              </p>
+              <p class="control">
+                <a class="button is-primary" :class="{ 'is-loading': loading }" @click="loadData">Refresh</a>
+              </p>
             </div>
           </div>
         </div>
@@ -107,7 +101,7 @@ export default {
 
   data: () => ({
     usage: null,
-    refreshInterval: 60000, // in milliseconds, used only with setTimeout below
+    refreshInterval: 5000, // in milliseconds
     loading: false,
     errors: [],
   }),
@@ -122,7 +116,7 @@ export default {
     // Load data once on startup, then poll periodically. Drawback is the period
     // cannot be changed easily.
     this.loadData()
-    setInterval(() => { this.loadData() }, 5000)
+    setInterval(() => { this.loadData() }, this.refreshInterval)
     // or setInterval(function () { this.loadData() }.bind(this), 5000)
     // `.bind(this)` is required so the function inside `setInterval` can
     // understand `this`. `setInterval` is not evaluated yet while its arguments
@@ -148,7 +142,7 @@ export default {
         this.errors.push(e)
         this.loading = false
       })
-      // this.loading = false  // does not work
+      // this.loading = false  // does not work, called before `then` or `catch`
 
       // setTimeout can be used instead of setInterval (see above) so the
       // function has a timeout on itself and updates periodically.
