@@ -1,23 +1,12 @@
-// TODO Investigate options to avoir hardcoding the names of the statistics, or
-// turn them into properties. Figure out how to apply custom computations to
-// concurrent_storage_size (" / 1024 | round")
-
 <template>
-  <div class="box is-info">
+  <div class="box">
     <h1 class="title">{{ name }}</h1>
     <div class="tile is-ancestor">
-      <div class="tile is-parent">
-        <article class="tile is-child notification" :class="states.concurrent_svms">
-          <p class="title">Concurrent SVMs</p>
-          <p class="subtitle">{{ stats.concurrent_svms.usage }} / {{ stats.concurrent_svms.limit }}</p>
-          <progress class="progress" :value="stats.concurrent_svms.usage" :max="stats.concurrent_svms.limit"></progress>
-        </article>
-      </div>
-      <div class="tile is-parent">
-        <article class="tile is-child notification" :class="states.concurrent_storage_size">
-          <p class="title">Storage Size (GB)</p>
-          <p class="subtitle">{{ stats.concurrent_storage_size.usage / 1024 | round }} / {{ stats.concurrent_storage_size.limit / 1024 }}</p>
-          <progress class="progress" :value="stats.concurrent_storage_size.usage / 1024 | round" :max="stats.concurrent_storage_size.limit / 1024"></progress>
+      <div class="tile is-parent" v-for="(stat, key) of statsToDisplay" :key="key">
+        <article class="tile is-child notification" :class="humanFriendlyStats[key].state">
+          <p class="title">{{ stat['name'] }}</p>
+          <p class="subtitle">{{ humanFriendlyStats[key].usage | round }} / {{ humanFriendlyStats[key].limit | round }}</p>
+          <progress class="progress" :value="humanFriendlyStats[key].usage | round" :max="humanFriendlyStats[key].limit | round"></progress>
         </article>
       </div>
     </div>
@@ -35,22 +24,39 @@ export default {
       type: Object,
       default: () => (null),
     },
+    statsToDisplay: {
+      type: Object,
+      default: () => ({
+        'concurrent_svms': {
+          'name': 'Cumulative SVMs',
+          'processing': (value) => ( value )
+        },
+        'concurrent_storage_size': {
+          'name': 'Storage Size (GB)',
+          'processing': (value) => ( value / 1024 )
+        }
+      })
+    }
   },
 
-  data: () => ({
-    'concurrent_svms': 'Cumulative SVMs',
-    'concurrent_storage_size': 'Storage Size (GB)',
-  }),
-
   computed: {
-    // Compute regional metrics to determine tile colors (success, warning...)
-    states: function () {
-      return this.stats
-      ? {
-        'concurrent_svms': this.getClassFromOccupancyRate(this.stats.concurrent_svms.usage / this.stats.concurrent_svms.limit),
-        'concurrent_storage_size': this.getClassFromOccupancyRate(this.stats.concurrent_storage_size.usage / this.stats.concurrent_storage_size.limit),
-      }
-      : 'is-info'  // return is-info by default
+    humanFriendlyStats: function () {
+      // Compute human-friendly version of stats by applying processing function
+      //
+      // Array.prototype.reduce reduces an array to a single value by somewhat
+      // merging the previous value with the current. The chain is initialized
+      // by an empty object {}. On every iteration a new key of myObject is
+      // added with its square as value.
+      // https://stackoverflow.com/questions/14810506/map-function-for-objects-instead-of-arrays
+      return Object.keys(this.stats).reduce(function(previous, current) {
+        previous[current] = this.stats[current]
+        if (this.statsToDisplay.hasOwnProperty(current)) {
+          previous[current].usage = this.statsToDisplay[current].processing(this.stats[current].usage)
+          previous[current].limit = this.statsToDisplay[current].processing(this.stats[current].limit)
+          previous[current].state = this.getClassFromOccupancyRate(previous[current].usage / previous[current].limit)
+        }
+        return previous;
+      }.bind(this), {});
     },
   },
 
@@ -63,6 +69,7 @@ export default {
       } else {
         return 'is-danger'
       }
+
     }
   }
 }
