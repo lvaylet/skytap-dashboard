@@ -10,24 +10,7 @@
 
     <section class="section" v-if="usage">
       <div class="container">
-        <div class="box">
-          <h1 class="title">Global</h1>
-          <div class="tile is-ancestor">
-            <div class="tile is-parent">
-              <article class="tile is-child notification">
-                <p class="title">Concurrent VMs</p>
-                <p class="subtitle">{{ usage.global.concurrent_vms.usage }}</p>
-              </article>
-            </div>
-            <div class="tile is-parent">
-              <article class="tile is-child notification">
-                <p class="title">Cumulative SVM Hours</p>
-                <p class="subtitle">{{ usage.global.cumulative_svms.usage | round }} / {{ usage.global.cumulative_svms.limit }}</p>
-                <progress class="progress" :value="usage.global.cumulative_svms.usage | round" :max="usage.global.cumulative_svms.limit"></progress>
-              </article>
-            </div>
-          </div>
-        </div>
+        <region key="global" name="Global" :stats="usage.global" :statsToDisplay="globalStatsToDisplay" />
         <region v-for="(region, regionName) of usage" v-if="regionName != 'global'" :key="regionName" :name="regionName" :stats="region" />
       </div>
     </section>
@@ -90,16 +73,16 @@
 
 <script>
 import { HTTP_REST_API } from './http-common'
-import JustGage from './JustGage.vue'
 import BulmaHero from './BulmaHero.vue'
 import Region from './Region.vue'
-import './filters.js'  // custom filters
+import { CONFIG } from './config';
 
 export default {
   name: 'app',
 
   data: () => ({
     usage: null,
+    globalStatsToDisplay: CONFIG.globalStatsToDisplay,
     refreshInterval: 5000, // in milliseconds
     loading: false,
     errors: [],
@@ -107,7 +90,6 @@ export default {
 
   // Register components
   components: {
-    'just-gage': JustGage,
     'region': Region,
     'bulma-hero': BulmaHero,
   },

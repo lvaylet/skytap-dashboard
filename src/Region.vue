@@ -14,6 +14,8 @@
 </template>
 
 <script>
+import './filters.js'  // custom filters
+
 export default {
   props: {
     name: {
@@ -29,14 +31,14 @@ export default {
       default: () => ({
         'concurrent_svms': {
           'name': 'Cumulative SVMs',
-          'processing': (value) => ( value )
+          'processing': (value) => ( value ),
         },
         'concurrent_storage_size': {
           'name': 'Storage Size (GB)',
-          'processing': (value) => ( value / 1024 )
-        }
-      })
-    }
+          'processing': (value) => ( value / 1024 ),
+        },
+      }),
+    },
   },
 
   computed: {
@@ -49,14 +51,16 @@ export default {
       // added with its square as value.
       // https://stackoverflow.com/questions/14810506/map-function-for-objects-instead-of-arrays
       return Object.keys(this.stats).reduce(function(previous, current) {
+        // Initialize human-friednly version with raw data
         previous[current] = this.stats[current]
+        // Process fields and compute occupancy rate if stat is to be displayed
         if (this.statsToDisplay.hasOwnProperty(current)) {
           previous[current].usage = this.statsToDisplay[current].processing(this.stats[current].usage)
           previous[current].limit = this.statsToDisplay[current].processing(this.stats[current].limit)
           previous[current].state = this.getClassFromOccupancyRate(previous[current].usage / previous[current].limit)
         }
         return previous;
-      }.bind(this), {});
+      }.bind(this), {})
     },
   },
 
@@ -69,9 +73,8 @@ export default {
       } else {
         return 'is-danger'
       }
-
-    }
-  }
+    },
+  },
 }
 </script>
 
