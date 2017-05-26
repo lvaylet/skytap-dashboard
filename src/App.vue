@@ -1,5 +1,3 @@
-// TODO Make refresh interval a variable and bind it to input field? Then use
-// setTimeout instead of setInterval
 // TODO Use Sass instead of CSS and import files individually to minimize
 // footprint: http://bulma.io/documentation/overview/modular/
 
@@ -82,7 +80,7 @@ export default {
   data: () => ({
     usage: null,
     globalStatsToDisplay: CONFIG.globalStatsToDisplay,
-    refreshInterval: 5000, // in milliseconds
+    refreshInterval: 15000, // in milliseconds
     loading: false,
     errors: [],
   }),
@@ -94,11 +92,14 @@ export default {
   },
 
   created: function () {
-    // Load data once on startup, then poll periodically. Drawback is the period
-    // cannot be changed easily.
+    // Load data once on startup...
     this.loadData()
-    setInterval(() => { this.loadData() }, this.refreshInterval)
-    // or setInterval(function () { this.loadData() }.bind(this), 5000)
+
+    // ...then poll periodically. One drawback of `setInterval` is the period
+    // cannot be changed easily
+    // setInterval(() => { this.loadData() }, this.refreshInterval)
+    // or
+    // setInterval(function () { this.loadData() }.bind(this), this.refreshInterval)
     // `.bind(this)` is required so the function inside `setInterval` can
     // understand `this`. `setInterval` is not evaluated yet while its arguments
     // are still being evaluated. `this.loadData().bind(...)` is evaluated, then
@@ -130,7 +131,7 @@ export default {
       // `setTimeout` requires an extra line of code to keep it propagating,
       // which can be a maintenance problem but also lets the period be changed
       // easily.
-      // setTimeout(this.loadData, this.refreshInterval)
+      setTimeout(this.loadData, this.refreshInterval)
     },
   },
 }
