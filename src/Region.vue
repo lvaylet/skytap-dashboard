@@ -1,12 +1,12 @@
 <template>
-  <div class="box">
+  <div class="content">
     <h1 class="title">{{ name }}</h1>
     <div class="tile is-ancestor">
       <div class="tile is-parent" v-for="(stat, key) of statsToDisplay" :key="key">
         <article class="tile is-child notification" :class="humanFriendlyStats[key].state">
           <p class="title">{{ stat['name'] }}</p>
-          <p class="subtitle">{{ humanFriendlyStats[key].usage | round }} / {{ humanFriendlyStats[key].limit | round }}</p>
-          <progress class="progress" :value="humanFriendlyStats[key].usage | round" :max="humanFriendlyStats[key].limit | round"></progress>
+          <p class="subtitle">{{ humanFriendlyStats[key].usage | round }}<span v-if="humanFriendlyStats[key].limit"> / {{ humanFriendlyStats[key].limit | round }}</span></p>
+          <progress class="progress" :value="humanFriendlyStats[key].usage | round" :max="humanFriendlyStats[key].limit | round" v-if="humanFriendlyStats[key].limit" ></progress>
         </article>
       </div>
     </div>
@@ -43,7 +43,8 @@ export default {
 
   computed: {
     humanFriendlyStats: function () {
-      // Compute human-friendly version of stats by applying processing function
+      // Compute human-friendly stats by applying processing function. Only
+      // process stats meant to be displayed.
       //
       // Array.prototype.reduce reduces an array to a single value by somewhat
       // merging the previous value with the current. The chain is initialized
@@ -53,11 +54,15 @@ export default {
       return Object.keys(this.stats).reduce(function(previous, current) {
         // Initialize human-friednly version with raw data
         previous[current] = this.stats[current]
-        // Process fields and compute occupancy rate if stat is to be displayed
+        // Process fields and compute occupancy rate if stat is to be displayed and limit is not null
         if (this.statsToDisplay.hasOwnProperty(current)) {
           previous[current].usage = this.statsToDisplay[current].processing(this.stats[current].usage)
-          previous[current].limit = this.statsToDisplay[current].processing(this.stats[current].limit)
-          previous[current].state = this.getClassFromOccupancyRate(previous[current].usage / previous[current].limit)
+          if (previous[current].limit) {
+            previous[current].limit = this.statsToDisplay[current].processing(this.stats[current].limit)
+            previous[current].state = this.getClassFromOccupancyRate(previous[current].usage / previous[current].limit)
+          } else {
+            previous[current].state = 'is-info'
+          }
         }
         return previous;
       }.bind(this), {})

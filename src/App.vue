@@ -5,13 +5,12 @@
 
 <template>
   <div id="app">
-    <bulma-hero title="Skytap Dashboard"
-                subtitle="Monitor usage in real time" />
+    <bulma-hero title="Skytap Dashboard" subtitle="Monitor usage in real time"></bulma-hero>
 
     <section class="section" v-if="usage">
       <div class="container">
-        <region key="global" name="Global" :stats="usage.global" :statsToDisplay="globalStatsToDisplay" />
-        <region v-for="(region, regionName) of usage" v-if="regionName != 'global'" :key="regionName" :name="regionName" :stats="region" />
+        <region key="global" name="Global" :stats="usage.global" :statsToDisplay="globalStatsToDisplay"></region>
+        <region v-for="(region, regionName) of usage" v-if="regionName != 'global'" :key="regionName" :name="regionName" :stats="region"></region>
       </div>
     </section>
 
