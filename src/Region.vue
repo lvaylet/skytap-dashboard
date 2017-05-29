@@ -30,7 +30,7 @@ export default {
       type: Object,
       default: () => ({
         'concurrent_svms': {
-          'name': 'Cumulative SVMs',
+          'name': 'Concurrent SVMs',
           'processing': (value) => ( value ),
         },
         'concurrent_storage_size': {
