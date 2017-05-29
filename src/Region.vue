@@ -1,11 +1,15 @@
 <template>
   <div class="content">
-    <h1 class="title">{{ name }}</h1>
     <div class="tile is-ancestor">
       <div class="tile is-parent" v-for="(stat, key) of statsToDisplay" :key="key">
         <article class="tile is-child notification" :class="humanFriendlyStats[key].state">
-          <p class="title">{{ stat['name'] }}</p>
-          <p class="subtitle">{{ humanFriendlyStats[key].usage | round }}<span v-if="humanFriendlyStats[key].limit"> / {{ humanFriendlyStats[key].limit | round }}</span></p>
+          <p class="title">{{ name }}</p>
+          <p class="subtitle">
+            {{ stat['name'] }}
+            <span class="tag">{{ humanFriendlyStats[key].usage | round }}
+              <span v-if="humanFriendlyStats[key].limit">&nbsp;/&nbsp;{{ humanFriendlyStats[key].limit | round }}</span>
+            </span>
+          </p>
           <progress class="progress" :value="humanFriendlyStats[key].usage | round" :max="humanFriendlyStats[key].limit | round" v-if="humanFriendlyStats[key].limit" ></progress>
         </article>
       </div>

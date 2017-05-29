@@ -3,7 +3,9 @@
 
 <template>
   <div id="app">
+<!--
     <bulma-hero title="Skytap Dashboard" subtitle="Monitor usage in real time"></bulma-hero>
+-->
 
     <section class="section" v-if="usage">
       <div class="container">
