@@ -124,8 +124,8 @@ export default {
 
         this.loading = false
       })
-      .catch(e => {
-        this.errors.push(e)
+      .catch(error => {
+        this.errors.push(error)
 
         if (error.response) {
           // The request was made and the server responded with a status code
